@@ -30,8 +30,15 @@ def menu_principal():
             print_title("Merci d'avoir utilisé NTL-SysToolbox !")
             sys.exit(0)
         else:
-            print("\n[INFO] Option sélectionnée : ", choix)
-            pause()
+            if choix == "1":
+                sous_menu_diagnostic()
+            elif choix == "2":
+                sous_menu_sauvegarde()
+            elif choix == "3":
+                sous_menu_audit()
+            else:
+                print("\n[ERREUR] Choix invalide, réessayez.")
+                pause()
 
 # --- Sous-menus ---
 def sous_menu_diagnostic():
