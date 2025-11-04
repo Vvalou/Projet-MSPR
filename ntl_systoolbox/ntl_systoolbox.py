@@ -33,5 +33,49 @@ def menu_principal():
             print("\n[INFO] Option sélectionnée : ", choix)
             pause()
 
+# --- Sous-menus ---
+def sous_menu_diagnostic():
+    while True:
+        clear_screen()
+        print_title("Module Diagnostic")
+        print("1) Vérifier services AD/DNS")
+        print("2) Tester MySQL")
+        print("3) Vérifier ressources système")
+        print("0) Retour au menu principal")
+        choix = input("Votre choix : ").strip()
+        if choix == "0":
+            return
+        else:
+            print("\n[INFO] Option Diagnostic sélectionnée : ", choix)
+            pause()
+
+def sous_menu_sauvegarde():
+    while True:
+        clear_screen()
+        print_title("Module Sauvegarde WMS")
+        print("1) Export SQL")
+        print("2) Export CSV")
+        print("0) Retour au menu principal")
+        choix = input("Votre choix : ").strip()
+        if choix == "0":
+            return
+        else:
+            print("\n[INFO] Option Sauvegarde sélectionnée : ", choix)
+            pause()
+
+def sous_menu_audit():
+    while True:
+        clear_screen()
+        print_title("Module Audit Obsolescence")
+        print("1) Inventaire réseau")
+        print("2) Vérifier OS obsolètes")
+        print("0) Retour au menu principal")
+        choix = input("Votre choix : ").strip()
+        if choix == "0":
+            return
+        else:
+            print("\n[INFO] Option Audit sélectionnée : ", choix)
+            pause()
+
 if __name__ == "__main__":
     menu_principal()
