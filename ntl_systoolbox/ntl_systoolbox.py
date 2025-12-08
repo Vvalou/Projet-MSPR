@@ -12,6 +12,9 @@ except ImportError:
     print("✓ Installé ! Relancez le programme.")
     sys.exit(0)
 
+# --- Fichiers Modules ---
+from modules.diagnostic_ad import verifier_services_ad_dns
+
 # --- Fonctions utilitaires ---
 def clear_screen():
     os.system('cls' if os.name == 'nt' else 'clear')
@@ -62,6 +65,16 @@ def sous_menu_diagnostic():
         choix = input("Votre choix : ").strip()
         if choix == "0":
             return
+        elif choix == "1":
+            # APPEL DU FICHIER diagnostic_ad.py
+            clear_screen()
+            print_title("Vérification services AD/DNS")
+            host = input("\nIP du contrôleur de domaine: ").strip()
+            username = input("Nom d'utilisateur: ").strip()
+            password = getpass.getpass("Mot de passe: ")
+            print("\n")
+            verifier_services_ad_dns(host, username, password)
+            pause()
         else:
             print("\n[INFO] Option Diagnostic sélectionnée : ", choix)
             pause()
