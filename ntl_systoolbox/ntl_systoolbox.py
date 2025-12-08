@@ -14,6 +14,7 @@ except ImportError:
 
 # --- Fichiers Modules ---
 from modules.diagnostic_ad import verifier_services_ad_dns
+from modules.systeme_windows import verifier_etat_windows
 
 # --- Fonctions utilitaires ---
 def clear_screen():
@@ -74,6 +75,16 @@ def sous_menu_diagnostic():
             password = getpass.getpass("Mot de passe: ")
             print("\n")
             verifier_services_ad_dns(host, username, password)
+            pause()
+        elif choix == "3":
+            # APPEL DU FICHIER systeme_windows.py
+            clear_screen()
+            print_title("Vérification ressources Windows Server")
+            host = input("\nIP du serveur Windows: ").strip()
+            username = input("Nom d'utilisateur: ").strip()
+            password = getpass.getpass("Mot de passe: ")
+            print("\n")
+            verifier_etat_windows(host, username, password)
             pause()
         else:
             print("\n[INFO] Option Diagnostic sélectionnée : ", choix)
