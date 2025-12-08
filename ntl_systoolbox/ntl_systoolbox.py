@@ -1,6 +1,16 @@
 #!/usr/bin/env python3
 import sys
 import os
+import subprocess
+
+# --- Vérification et installation des dépendances ---
+try:
+    import winrm
+except ImportError:
+    print("Installation de pywinrm...")
+    subprocess.check_call([sys.executable, "-m", "pip", "install", "pywinrm", "-q"])
+    print("✓ Installé ! Relancez le programme.")
+    sys.exit(0)
 
 # --- Fonctions utilitaires ---
 def clear_screen():
