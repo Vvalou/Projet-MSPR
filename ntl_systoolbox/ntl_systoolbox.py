@@ -13,6 +13,7 @@ except ImportError:
     sys.exit(0)
 
 # --- Fichiers Modules ---
+import getpass
 from modules.diagnostic_ad import verifier_services_ad_dns
 from modules.systeme_windows import verifier_etat_windows
 
