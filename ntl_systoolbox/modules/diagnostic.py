@@ -44,7 +44,6 @@ class HostInfo:
 
 if __name__ == "__main__":
     print("Module Diagnostic Réseau - initialisation")
-# ... tout le code de l'étape 1 au-dessus ...
 
 OUI_VENDOR_MAP = {
     "00:1A:2B": "Cisco",
@@ -88,4 +87,73 @@ def detect_os_from_ttl(ttl: Optional[int]) -> str:
 
 if __name__ == "__main__":
     print("Module Diagnostic Réseau - utilitaires MAC/OS prêts")
+
+
+def ping_ip(ip: str) -> Tuple[bool, Optional[int]]:
+    system = platform.system().lower()
+    if system == "windows":
+        cmd = ["ping", "-n", "1", "-w", str(PING_TIMEOUT_MS_WINDOWS), ip]
+    else:
+        cmd = ["ping", "-c", "1", "-W", str(PING_TIMEOUT_SEC_LINUX), ip]
+
+    try:
+        result = subprocess.run(
+            cmd,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.DEVNULL,
+            text=True,
+        )
+        output = result.stdout or ""
+        reachable = (result.returncode == 0)
+        ttl = None
+
+        m = re.search(r"ttl[= ](\d+)", output, flags=re.IGNORECASE)
+        if m:
+            try:
+                ttl = int(m.group(1))
+            except ValueError:
+                ttl = None
+
+        return reachable, ttl
+    except Exception:
+        return False, None
+
+
+def get_arp_mac(ip: str) -> str:
+    system = platform.system().lower()
+    if system == "windows":
+        cmd = ["arp", "-a", ip]
+        sep = "-"
+    else:
+        cmd = ["arp", "-n", ip]
+        sep = ":"
+
+    try:
+        result = subprocess.run(
+            cmd,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.DEVNULL,
+            text=True,
+        )
+        out = result.stdout or ""
+        for token in out.split():
+            if sep in token and len(token) >= 17:
+                return normalize_mac(token)
+    except Exception:
+        pass
+    return "Inconnue"
+
+
+def get_hostname_reverse_dns(ip: str) -> str:
+    try:
+        socket.setdefaulttimeout(DNS_TIMEOUT_SEC)
+        name, _, _ = socket.gethostbyaddr(ip)
+        return name
+    except Exception:
+        return "Inconnu"
+
+
+if __name__ == "__main__":
+    ok, ttl = ping_ip("8.8.8.8")
+    print("Test ping 8.8.8.8:", ok, "TTL =", ttl)
 
