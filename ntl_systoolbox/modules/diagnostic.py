@@ -157,3 +157,79 @@ if __name__ == "__main__":
     ok, ttl = ping_ip("8.8.8.8")
     print("Test ping 8.8.8.8:", ok, "TTL =", ttl)
 
+
+def prompt_yes_no(question: str, default_yes: bool = True) -> bool:
+    suffix = " (o/n) " if default_yes else " (n/o) "
+    while True:
+        choice = input(question + suffix).strip().lower()
+        if choice == "" and default_yes:
+            return True
+        if choice == "" and not default_yes:
+            return False
+        if choice in ("o", "oui", "y", "yes"):
+            return True
+        if choice in ("n", "non", "no"):
+            return False
+        print("[ERREUR] Réponse non reconnue. Tape 'o' ou 'n'.")
+
+
+def parse_network_input(raw: str) -> ipaddress.IPv4Network:
+    raw = raw.strip()
+    if "/" in raw:
+        net = ipaddress.ip_network(raw, strict=False)
+        if not isinstance(net, ipaddress.IPv4Network):
+            raise ValueError("Seuls les réseaux IPv4 sont supportés.")
+        return net
+
+    ip = ipaddress.ip_address(raw)
+    if not isinstance(ip, ipaddress.IPv4Address):
+        raise ValueError("Seuls les réseaux IPv4 sont supportés.")
+
+    use_default = prompt_yes_no(
+        f"Aucune taille fournie. Utiliser /{DEFAULT_PREFIX} par défaut ?",
+        default_yes=True,
+    )
+    if use_default:
+        prefix = DEFAULT_PREFIX
+    else:
+        while True:
+            s = input("Entrez la taille du réseau (ex: 24 pour /24) : ").strip()
+            try:
+                prefix = int(s)
+                if 0 <= prefix <= 32:
+                    break
+                print("[ERREUR] Le préfixe doit être entre 0 et 32.")
+            except ValueError:
+                print("[ERREUR] Valeur invalide.")
+
+    net = ipaddress.ip_network(f"{ip}/{prefix}", strict=False)
+    if str(ip) != str(net.network_address):
+        print(
+            f"[INFO] Adresse ajustée vers le réseau : "
+            f"{net.network_address}/{net.prefixlen}"
+        )
+    return net
+
+
+def print_table_header() -> None:
+    header = f"{'IP':<15} {'Statut':<6} {'Hostname':<30} {'MAC':<20} {'Fabricant':<20} {'OS estimé':<22}"
+    print("\n" + header)
+    print("-" * len(header))
+
+
+def print_host_line(h: HostInfo) -> None:
+    print(
+        f"{h.ip:<15} "
+        f"{h.status:<6} "
+        f"{h.hostname[:29]:<30} "
+        f"{h.mac:<20} "
+        f"{h.vendor[:19]:<20} "
+        f"{h.os_guess[:21]:<22}"
+    )
+
+
+if __name__ == "__main__":
+    net = parse_network_input("192.168.1.0/24")
+    print("Réseau analysé :", net)
+
+
