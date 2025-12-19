@@ -143,7 +143,7 @@ Write-Host "CPU_USAGE=$($cpu.LoadPercentage)"
                     usage = line.split('=', 1)[1].strip()
                     info_cpu['usage'] = usage
             
-            # Affichage CPU
+            # Affichage CPU corrigé
             if 'name' in info_cpu and 'cores' in info_cpu:
                 print(f"  CPU             : {info_cpu['name']} ({info_cpu['cores']} cœurs)")
                 print(f"  Utilisation CPU : {info_cpu['usage']}%")
@@ -227,6 +227,7 @@ Get-WmiObject Win32_LogicalDisk -Filter "DriveType=3" | ForEach-Object {
                         
                         ok(f"{lettre:<3}         : {used} GB / {total} GB ({percent}%)")
         
+        # Résultat
         result = {
             'timestamp': timestamp,
             'host': host,
@@ -239,17 +240,87 @@ Get-WmiObject Win32_LogicalDisk -Filter "DriveType=3" | ForEach-Object {
             'codes_retour': {'global': 0}
         }
         
+        # Sauvegarde JSON
+        if output_json:
+            import random
+            id_unique = random.randint(0, 999)
+            filename = f"rapports/systeme_windows_{datetime.now().strftime('%d-%m-%Y')}_ID{id_unique}.json"
+            with open(filename, 'w', encoding='utf-8') as f:
+                json.dump(result, f, indent=2, ensure_ascii=False)
+            print(f"\n  Rapport sauvegardé : {filename}")
+        
         return result
         
     except Exception as e:
-        erreur(f"\n[ERREUR] {str(e)}")
+        error_str = str(e).lower()
+        
+        # Timeout
+        if 'timeout' in error_str or 'timed out' in error_str:
+            erreur(f"\n[ERREUR] Délai de connexion dépassé pour {host}")
+            print("\nCauses possibles :")
+            print("  - Le serveur est éteint ou injoignable")
+            print("  - L'adresse IP est incorrecte")
+            print("  - Le pare-feu bloque le port 5985")
+            msg = 'Délai de connexion dépassé'
+            code = 2
+            
+        # Identifiants
+        elif 'credentials' in error_str or 'rejected' in error_str:
+            erreur("\n[ERREUR] Identifiants refusés par le serveur")
+            print("\nVérifiez :")
+            print("  - Le nom d'utilisateur")
+            print("  - Le mot de passe")
+            msg = 'Identifiants refusés'
+            code = 3
+            
+        # Connexion
+        elif 'connection' in error_str or 'winrm' in error_str:
+            erreur(f"\n[ERREUR] Impossible de se connecter à {host}")
+            print("\nCauses possibles :")
+            print("  - WinRM n'est pas activé sur le serveur")
+            print("  - Le pare-feu bloque le port 5985")
+            print("  - Le serveur n'est pas accessible")
+            msg = 'Connexion impossible'
+            code = 2
+            
+        # Autre
+        else:
+            erreur(f"\n[ERREUR] Une erreur inattendue s'est produite")
+            print(f"\nDétails : {str(e)}")
+            msg = str(e)
+            code = 1
         
         error_result = {
             'timestamp': timestamp,
             'host': host,
             'status': 'error',
-            'error': str(e),
-            'codes_retour': {'global': 1}
+            'error': msg,
+            'codes_retour': {'global': code}
         }
         
+        if output_json:
+            import random
+            id_unique = random.randint(0, 999)
+            filename = f"rapports/systeme_windows_ERROR_{datetime.now().strftime('%d-%m-%Y')}_ID{id_unique}.json"
+            with open(filename, 'w', encoding='utf-8') as f:
+                json.dump(error_result, f, indent=2, ensure_ascii=False)
+        
         return error_result
+
+
+# Test du module
+if __name__ == "__main__":
+    import getpass
+    
+    titre("TEST DU MODULE AUDIT WINDOWS")
+    
+    host = input("\nIP du serveur Windows: ").strip()
+    username = input("Nom d'utilisateur: ").strip()
+    password = getpass.getpass("Mot de passe: ")
+    
+    print("\n")
+    result = verifier_etat_windows(host, username, password)
+    
+    print("\n" + CYAN + "=" * 60)
+    print(f"Code de retour: {result['codes_retour']['global']}")
+    print("=" * 60 + RESET)
