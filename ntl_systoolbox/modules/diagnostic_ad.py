@@ -59,12 +59,48 @@ def verifier_services_ad_dns(host, username, password, output_json=True):
         hostname = test.std_out.decode('utf-8').strip()
         ok(f"[OK] Connecté à {hostname}")
         
+        # Vérification des services
+        titre("VÉRIFICATION DES SERVICES")
+        
+        services = {'DNS': 'DNS', 'NTDS': 'AD DS'}
+        services_status = {}
+        
+        for code, nom in services.items():
+            result = session.run_cmd(f'sc query {code}')
+            
+            if result.status_code == 0:
+                output = result.std_out.decode('utf-8')
+                
+                if 'RUNNING' in output:
+                    services_status[code] = 'RUNNING'
+                    ok(f"{nom:<15} : RUNNING")
+                elif 'STOPPED' in output:
+                    services_status[code] = 'STOPPED'
+                    erreur(f"{nom:<15} : STOPPED")
+                else:
+                    services_status[code] = 'UNKNOWN'
+                    erreur(f"{nom:<15} : UNKNOWN")
+            else:
+                services_status[code] = 'NOT_FOUND'
+                erreur(f"{nom:<15} : SERVICE NON TROUVÉ")
+        
+        # Nombre de services actifs
+        nb_ok = sum(1 for s in services_status.values() if s == 'RUNNING')
+        nb_total = len(services_status)
+        print(f"\n  Services actifs : {nb_ok}/{nb_total}")
+        
+        services_ok = all(services_status.get(s) == 'RUNNING' for s in ['NTDS', 'DNS'])
+        
         result = {
             'timestamp': timestamp,
             'host': host,
             'hostname': hostname,
             'status': 'success',
-            'codes_retour': {'global': 0}
+            'services': services_status,
+            'codes_retour': {
+                'global': 0 if services_ok else 1,
+                'services_critiques_ok': services_ok
+            }
         }
         
         return result
