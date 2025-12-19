@@ -1,9 +1,3 @@
-# ---------------------------------------------- #
-
-#Module d'audit Windows Server pour NTL-SysToolbox
-
-# ---------------------------------------------- #
-
 import winrm
 import json
 from datetime import datetime
@@ -110,12 +104,51 @@ Write-Host "UPTIME_MINUTES=$($uptime.Minutes)"
             if 'uptime_days' in info_os:
                 print(f"  Uptime          : {info_os['uptime_days']} jours, {info_os['uptime_hours']} heures, {info_os['uptime_minutes']} minutes")
         
+        # Utilisation des ressources
+        titre("UTILISATION DES RESSOURCES")
+        
+        # CPU
+        ps_cpu = """
+$cpu = Get-WmiObject Win32_Processor | Select-Object -First 1
+
+Write-Host "CPU_NAME=$($cpu.Name.Trim())"
+Write-Host "CPU_CORES=$($cpu.NumberOfCores)"
+Write-Host "CPU_USAGE=$($cpu.LoadPercentage)"
+"""
+        
+        result_cpu = session.run_ps(ps_cpu)
+        info_cpu = {}
+        
+        if result_cpu.status_code == 0:
+            output = result_cpu.std_out.decode('utf-8', errors='ignore')
+            
+            for line in output.split('\n'):
+                line = line.strip()
+                
+                if line.startswith('CPU_NAME='):
+                    cpu_name = line.split('=', 1)[1].strip()
+                    info_cpu['name'] = cpu_name
+                    
+                elif line.startswith('CPU_CORES='):
+                    cores = line.split('=', 1)[1].strip()
+                    info_cpu['cores'] = cores
+                    
+                elif line.startswith('CPU_USAGE='):
+                    usage = line.split('=', 1)[1].strip()
+                    info_cpu['usage'] = usage
+            
+            # Affichage CPU
+            if 'name' in info_cpu and 'cores' in info_cpu:
+                print(f"  CPU             : {info_cpu['name']} ({info_cpu['cores']} cœurs)")
+                print(f"  Utilisation CPU : {info_cpu['usage']}%")
+        
         result = {
             'timestamp': timestamp,
             'host': host,
             'hostname': hostname,
             'status': 'success',
             'info_os': info_os,
+            'info_cpu': info_cpu,
             'codes_retour': {'global': 0}
         }
         
