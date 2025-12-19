@@ -1,7 +1,8 @@
-#!/usr/bin/env python3
-"""
-Module de diagnostic AD/DNS pour NTL-SysToolbox
-"""
+# ---------------------------------------------- #
+
+#Module de diagnostic AD/DNS pour NTL-SysToolbox
+
+# ---------------------------------------------- #
 
 import winrm
 import json
