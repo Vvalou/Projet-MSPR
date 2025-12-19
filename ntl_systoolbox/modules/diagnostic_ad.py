@@ -127,6 +127,26 @@ Write-Host "ISDC=$isDC"
                     role = "Contrôleur de domaine" if is_dc == "2" else "Serveur membre"
                     print(f"  Rôle            : {role}")
         
+        # Vérification DNS
+        titre("VÉRIFICATION DNS")
+        
+        dns_test = session.run_cmd('nslookup localhost')
+        dns_ok = dns_test.status_code == 0
+        
+        if dns_ok:
+            ok("Résolution DNS  : OK")
+        else:
+            erreur("Résolution DNS  : ERREUR")
+        
+        # Test domaine
+        if config_ad.get('domaine'):
+            dns_domain = session.run_cmd(f'nslookup {config_ad["domaine"]}')
+            
+            if dns_domain.status_code == 0:
+                ok("Résolution domaine : OK")
+            else:
+                erreur("Résolution domaine : ERREUR")
+        
         services_ok = all(services_status.get(s) == 'RUNNING' for s in ['NTDS', 'DNS'])
         
         result = {
@@ -136,6 +156,7 @@ Write-Host "ISDC=$isDC"
             'status': 'success',
             'services': services_status,
             'configuration_ad': config_ad,
+            'dns_operational': dns_ok,
             'codes_retour': {
                 'global': 0 if services_ok else 1,
                 'services_critiques_ok': services_ok
