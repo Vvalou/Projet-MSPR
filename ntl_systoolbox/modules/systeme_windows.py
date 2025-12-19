@@ -185,6 +185,48 @@ Write-Host "RAM_PERCENT=$percent"
             if 'total' in info_ram:
                 print(f"  RAM             : {info_ram['used']} GB / {info_ram['total']} GB ({info_ram['percent']}%)")
         
+        # Disques
+        ps_disk = """
+Get-WmiObject Win32_LogicalDisk -Filter "DriveType=3" | ForEach-Object {
+    $total = [math]::Round($_.Size/1GB, 2)
+    $free = [math]::Round($_.FreeSpace/1GB, 2)
+    $used = [math]::Round($total - $free, 2)
+    $percent = [math]::Round(($used/$total)*100, 2)
+    
+    Write-Host "DISK=$($_.DeviceID)|$total|$used|$percent"
+}
+"""
+        
+        result_disk = session.run_ps(ps_disk)
+        disques = []
+        
+        print("\n  Disques:")
+        
+        if result_disk.status_code == 0:
+            output = result_disk.std_out.decode('utf-8', errors='ignore')
+            
+            for line in output.split('\n'):
+                line = line.strip()
+                
+                if line.startswith('DISK='):
+                    data = line.split('=', 1)[1].strip()
+                    parts = data.split('|')
+                    
+                    if len(parts) == 4:
+                        lettre = parts[0]
+                        total = parts[1]
+                        used = parts[2]
+                        percent = parts[3]
+                        
+                        disques.append({
+                            'lettre': lettre,
+                            'total': total,
+                            'used': used,
+                            'percent': percent
+                        })
+                        
+                        ok(f"{lettre:<3}         : {used} GB / {total} GB ({percent}%)")
+        
         result = {
             'timestamp': timestamp,
             'host': host,
@@ -193,6 +235,7 @@ Write-Host "RAM_PERCENT=$percent"
             'info_os': info_os,
             'info_cpu': info_cpu,
             'info_ram': info_ram,
+            'disques': disques,
             'codes_retour': {'global': 0}
         }
         
