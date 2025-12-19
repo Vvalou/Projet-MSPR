@@ -89,6 +89,44 @@ def verifier_services_ad_dns(host, username, password, output_json=True):
         nb_total = len(services_status)
         print(f"\n  Services actifs : {nb_ok}/{nb_total}")
         
+        # Configuration AD
+        titre("CONFIGURATION AD DS")
+        
+        ps_cmd = """
+$domain = (Get-WmiObject Win32_ComputerSystem).Domain
+$dcName = $env:COMPUTERNAME
+$isDC = (Get-WmiObject Win32_OperatingSystem).ProductType
+
+Write-Host "DOMAIN=$domain"
+Write-Host "DCNAME=$dcName"
+Write-Host "ISDC=$isDC"
+"""
+        
+        ps_result = session.run_ps(ps_cmd)
+        config_ad = {}
+        
+        if ps_result.status_code == 0:
+            output = ps_result.std_out.decode('utf-8', errors='ignore')
+            
+            for line in output.split('\n'):
+                line = line.strip()
+                
+                if line.startswith('DOMAIN='):
+                    domaine = line.split('=', 1)[1].strip()
+                    config_ad['domaine'] = domaine
+                    print(f"  Domaine         : {domaine}")
+                    
+                elif line.startswith('DCNAME='):
+                    dc_name = line.split('=', 1)[1].strip()
+                    config_ad['dc_name'] = dc_name
+                    print(f"  Contrôleur DC   : {dc_name}")
+                    
+                elif line.startswith('ISDC='):
+                    is_dc = line.split('=', 1)[1].strip()
+                    config_ad['is_dc'] = is_dc
+                    role = "Contrôleur de domaine" if is_dc == "2" else "Serveur membre"
+                    print(f"  Rôle            : {role}")
+        
         services_ok = all(services_status.get(s) == 'RUNNING' for s in ['NTDS', 'DNS'])
         
         result = {
@@ -97,6 +135,7 @@ def verifier_services_ad_dns(host, username, password, output_json=True):
             'hostname': hostname,
             'status': 'success',
             'services': services_status,
+            'configuration_ad': config_ad,
             'codes_retour': {
                 'global': 0 if services_ok else 1,
                 'services_critiques_ok': services_ok
