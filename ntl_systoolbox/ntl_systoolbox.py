@@ -4,17 +4,32 @@ import os
 import subprocess
 
 # --- Vérification et installation des dépendances ---
-try:
-    import winrm
-except ImportError:
-    print("Installation de pywinrm...")
-    subprocess.check_call([sys.executable, "-m", "pip", "install", "pywinrm", "-q"])
-    print("✓ Installé ! Relancez le programme.")
-    sys.exit(0)
+def installer_dependances():
+    """Installe les dépendances nécessaires"""
+    dependances = {
+        'winrm': 'pywinrm',
+        'paramiko': 'paramiko'
+    }
+    
+    for module, package in dependances.items():
+        try:
+            __import__(module)
+        except ImportError:
+            print(f"Installation de {package}...")
+            subprocess.check_call([sys.executable, "-m", "pip", "install", package, "-q"])
+            print(f"✓ {package} installé !")
+
+# Installer les dépendances au démarrage
+installer_dependances()
+
+# --- Imports après installation ---
+import winrm
+import paramiko
+import getpass
 
 # --- Fichiers Modules ---
-import getpass
 from modules.diagnostic_ad import verifier_services_ad_dns
+from modules.systeme_windows import verifier_etat_windows
 
 # --- Fonctions utilitaires ---
 def clear_screen():
@@ -28,7 +43,7 @@ def print_title(text):
 def pause():
     input("\nAppuyez sur Entrée pour continuer...")
 
-# --- Menu principal basique ---
+# --- Menu principal ---
 def menu_principal():
     while True:
         clear_screen()
@@ -37,8 +52,9 @@ def menu_principal():
         print("2) Module de Sauvegarde WMS")
         print("3) Module Audit d'Obsolescence")
         print("0) Quitter le menu")
+        
         choix = input("Votre choix : ").strip()
-
+        
         if choix == "0":
             clear_screen()
             print_title("Merci d'avoir utilisé NTL-SysToolbox !")
@@ -61,9 +77,12 @@ def sous_menu_diagnostic():
         print_title("Module Diagnostic")
         print("1) Vérifier services AD/DNS")
         print("2) Tester MySQL")
-        print("3) Vérifier ressources système")
+        print("3) Vérifier ressources système Windows")
+        print("4) Vérifier ressources système Ubuntu")
         print("0) Retour au menu principal")
+        
         choix = input("Votre choix : ").strip()
+        
         if choix == "0":
             return
         elif choix == "1":
@@ -76,6 +95,16 @@ def sous_menu_diagnostic():
             print("\n")
             verifier_services_ad_dns(host, username, password)
             pause()
+        elif choix == "3":
+            # APPEL DU FICHIER systeme_windows.py
+            clear_screen()
+            print_title("Vérification ressources Windows Server")
+            host = input("\nIP du serveur Windows: ").strip()
+            username = input("Nom d'utilisateur: ").strip()
+            password = getpass.getpass("Mot de passe: ")
+            print("\n")
+            verifier_etat_windows(host, username, password)
+            pause()
 
 def sous_menu_sauvegarde():
     while True:
@@ -84,7 +113,9 @@ def sous_menu_sauvegarde():
         print("1) Export SQL")
         print("2) Export CSV")
         print("0) Retour au menu principal")
+        
         choix = input("Votre choix : ").strip()
+        
         if choix == "0":
             return
         else:
@@ -98,7 +129,9 @@ def sous_menu_audit():
         print("1) Inventaire réseau")
         print("2) Vérifier OS obsolètes")
         print("0) Retour au menu principal")
+        
         choix = input("Votre choix : ").strip()
+        
         if choix == "0":
             return
         else:
