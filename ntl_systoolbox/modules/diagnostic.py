@@ -233,3 +233,49 @@ if __name__ == "__main__":
     print("Réseau analysé :", net)
 
 
+def scan_network(network: ipaddress.IPv4Network) -> List[HostInfo]:
+    hosts: List[HostInfo] = []
+    ip_list = list(network.hosts())
+    total = len(ip_list)
+
+    print(f"\n[INFO] Lancement du scan sur {network.with_prefixlen} (hôtes: {total})")
+    printed_header = False
+
+    for idx, ip in enumerate(ip_list, start=1):
+        ip_str = str(ip)
+        print(f"[SCAN] {ip_str} ({idx}/{total})", end="\r", flush=True)
+
+        reachable, ttl = ping_ip(ip_str)
+        status = "UP" if reachable else "DOWN"
+
+        if not reachable and not SHOW_DOWN_HOSTS:
+            continue
+
+        h = HostInfo(ip=ip_str, status=status, ttl=ttl)
+
+        if reachable:
+            h.mac = get_arp_mac(ip_str)
+            h.vendor = guess_vendor(h.mac) if h.mac not in ("", "Inconnue") else "Inconnu"
+            h.os_guess = detect_os_from_ttl(ttl)
+            h.hostname = "SKIP" if FAST_MODE else get_hostname_reverse_dns(ip_str)
+
+        hosts.append(h)
+
+        if not printed_header:
+            print(" " * 60, end="\r")
+            print_table_header()
+            printed_header = True
+
+        print_host_line(h)
+        print(" " * 80, end="\r")
+
+    return hosts
+
+
+if __name__ == "__main__":
+    network = parse_network_input("192.168.1.0/24")
+    hosts = scan_network(network)
+    print("\nNombre d'hôtes scannés :", len(hosts))
+
+
+
