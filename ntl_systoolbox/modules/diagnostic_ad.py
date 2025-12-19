@@ -35,3 +35,31 @@ def erreur(texte):
 def info(texte):
     """Affiche une info en bleu"""
     print(BLEU + texte + RESET)
+
+def verifier_services_ad_dns(host, username, password, output_json=True):
+    """Vérifie les services AD/DNS sur un contrôleur de domaine"""
+    
+    timestamp = datetime.now().isoformat()
+    
+    try:
+        # TODO: Implémenter la logique de vérification
+        
+        result = {
+            'timestamp': timestamp,
+            'host': host,
+            'status': 'success',
+            'codes_retour': {'global': 0}
+        }
+        
+        return result
+        
+    except Exception as e:
+        error_result = {
+            'timestamp': timestamp,
+            'host': host,
+            'status': 'error',
+            'error': str(e),
+            'codes_retour': {'global': 1}
+        }
+        
+        return error_result
