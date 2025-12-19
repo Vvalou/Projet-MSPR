@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  wms-db:
+    image: mysql:8.0
+    container_name: wms-db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: NTLroot2025
+      MYSQL_DATABASE: wms
+      MYSQL_USER: wms_backup
+      MYSQL_PASSWORD: BackupWMS2025
+    ports:
+      - "3306:3306"
+    volumes:
+      - wms_data:/var/lib/mysql
+
+volumes:
+  wms_data:
