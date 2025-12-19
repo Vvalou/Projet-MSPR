@@ -148,6 +148,7 @@ Write-Host "ISDC=$isDC"
             else:
                 erreur("Résolution domaine : ERREUR")
         
+        # Résultat
         services_ok = all(services_status.get(s) == 'RUNNING' for s in ['NTDS', 'DNS'])
         
         result = {
@@ -175,14 +176,50 @@ Write-Host "ISDC=$isDC"
         return result
         
     except Exception as e:
-        erreur(f"\n[ERREUR] {str(e)}")
+        error_str = str(e).lower()
+        
+        # Timeout
+        if 'timeout' in error_str or 'timed out' in error_str:
+            erreur(f"\n[ERREUR] Délai de connexion dépassé pour {host}")
+            print("\nCauses possibles :")
+            print("  - Le serveur est éteint ou injoignable")
+            print("  - L'adresse IP est incorrecte")
+            print("  - Le pare-feu bloque le port 5985")
+            msg = 'Délai de connexion dépassé'
+            code = 2
+            
+        # Identifiants
+        elif 'credentials' in error_str or 'rejected' in error_str:
+            erreur("\n[ERREUR] Identifiants refusés par le serveur")
+            print("\nVérifiez :")
+            print("  - Le nom d'utilisateur")
+            print("  - Le mot de passe")
+            msg = 'Identifiants refusés'
+            code = 3
+            
+        # Connexion
+        elif 'connection' in error_str or 'winrm' in error_str:
+            erreur(f"\n[ERREUR] Impossible de se connecter à {host}")
+            print("\nCauses possibles :")
+            print("  - WinRM n'est pas activé sur le serveur")
+            print("  - Le pare-feu bloque le port 5985")
+            print("  - Le serveur n'est pas accessible")
+            msg = 'Connexion impossible'
+            code = 2
+            
+        # Autre
+        else:
+            erreur(f"\n[ERREUR] Une erreur inattendue s'est produite")
+            print(f"\nDétails : {str(e)}")
+            msg = str(e)
+            code = 1
         
         error_result = {
             'timestamp': timestamp,
             'host': host,
             'status': 'error',
-            'error': str(e),
-            'codes_retour': {'global': 1}
+            'error': msg,
+            'codes_retour': {'global': code}
         }
         
         if output_json:
@@ -192,3 +229,21 @@ Write-Host "ISDC=$isDC"
                 json.dump(error_result, f, indent=2, ensure_ascii=False)
         
         return error_result
+
+
+# Test du module
+if __name__ == "__main__":
+    import getpass
+    
+    titre("TEST DU MODULE DIAGNOSTIC AD/DNS")
+    
+    host = input("\nIP du contrôleur de domaine: ").strip()
+    username = input("Nom d'utilisateur: ").strip()
+    password = getpass.getpass("Mot de passe: ")
+    
+    print("\n")
+    result = verifier_services_ad_dns(host, username, password)
+    
+    print("\n" + CYAN + "=" * 60)
+    print(f"Code de retour: {result['codes_retour']['global']}")
+    print("=" * 60 + RESET)
