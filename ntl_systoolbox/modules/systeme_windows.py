@@ -60,11 +60,62 @@ def verifier_etat_windows(host, username, password, output_json=True):
         hostname = test.std_out.decode('utf-8').strip()
         ok(f"[OK] Connecté à {hostname}")
         
+        # Informations système
+        titre("INFORMATIONS SYSTÈME")
+        
+        ps_os = """
+$os = Get-WmiObject Win32_OperatingSystem
+$bootTime = $os.ConvertToDateTime($os.LastBootUpTime)
+$uptime = (Get-Date) - $bootTime
+
+Write-Host "OS=$($os.Caption)"
+Write-Host "VERSION=$($os.Version)"
+Write-Host "UPTIME_DAYS=$([int]$uptime.TotalDays)"
+Write-Host "UPTIME_HOURS=$($uptime.Hours)"
+Write-Host "UPTIME_MINUTES=$($uptime.Minutes)"
+"""
+        
+        result_os = session.run_ps(ps_os)
+        info_os = {}
+        
+        if result_os.status_code == 0:
+            output = result_os.std_out.decode('utf-8', errors='ignore')
+            
+            for line in output.split('\n'):
+                line = line.strip()
+                
+                if line.startswith('OS='):
+                    os_name = line.split('=', 1)[1].strip()
+                    info_os['os'] = os_name
+                    print(f"  OS              : {os_name}")
+                    
+                elif line.startswith('VERSION='):
+                    version = line.split('=', 1)[1].strip()
+                    info_os['version'] = version
+                    print(f"  Version         : {version}")
+                    
+                elif line.startswith('UPTIME_DAYS='):
+                    days = line.split('=', 1)[1].strip()
+                    info_os['uptime_days'] = days
+                    
+                elif line.startswith('UPTIME_HOURS='):
+                    hours = line.split('=', 1)[1].strip()
+                    info_os['uptime_hours'] = hours
+                    
+                elif line.startswith('UPTIME_MINUTES='):
+                    minutes = line.split('=', 1)[1].strip()
+                    info_os['uptime_minutes'] = minutes
+            
+            # Afficher uptime
+            if 'uptime_days' in info_os:
+                print(f"  Uptime          : {info_os['uptime_days']} jours, {info_os['uptime_hours']} heures, {info_os['uptime_minutes']} minutes")
+        
         result = {
             'timestamp': timestamp,
             'host': host,
             'hostname': hostname,
             'status': 'success',
+            'info_os': info_os,
             'codes_retour': {'global': 0}
         }
         
