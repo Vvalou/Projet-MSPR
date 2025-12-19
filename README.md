@@ -19,10 +19,10 @@ Cet utilitaire industrialise les vérifications d'exploitation, sécurise la ges
 
 | Membre          | Rôle                              |
 |-----------------|-----------------------------------|
-| **V. VERGULT**  | Chef de Projet / Développeur      |
-| **C. REDOULES** | Développeur / Expert Réseau       |
-| **M. BJAOUI**   | Développeur / Expert Base de Données |
-| **S. TARSSE**   | Développeur / Expert Système      |
+| **V. VERGULT**  | Etudiant Bachelor 3 ASRBD SYSOPS  |
+| **C. REDOULES** | Etudiant Bachelor 3 ASRBD SYSOPS  |
+| **M. BJAOUI**   | Etudiant Bachelor 3 ASRBD SYSOPS  |
+| **S. TARSSE**   | Etudiante Bachelor 3 ASRBD SYSOPS  |
 
 ---
 
