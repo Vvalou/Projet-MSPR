@@ -1,8 +1,7 @@
 # NTL-SysToolbox
 
 > Outil d'exploitation et de supervision pour NordTransit Logistics
-[2025-2026 ASRBD - Sujet MSPR TPRE511.pdf](https://github.com/user-attachments/files/24255750/2025-2026.ASRBD.-.Sujet.MSPR.TPRE511.pdf)
-
+(https://github.com/user-attachments/files/24255750/2025-2026.ASRBD.-.Sujet.MSPR.TPRE511.pdf)
 ---
 
 ## À propos
@@ -22,7 +21,7 @@ Cet utilitaire industrialise les vérifications d'exploitation, sécurise la ges
 | **V. VERGULT**  | Etudiant Bachelor 3 ASRBD SYSOPS  |
 | **C. REDOULES** | Etudiant Bachelor 3 ASRBD SYSOPS  |
 | **M. BJAOUI**   | Etudiant Bachelor 3 ASRBD SYSOPS  |
-| **S. TARSSE**   | Etudiante Bachelor 3 ASRBD SYSOPS  |
+| **S. TARSSE**   | Etudiante Bachelor 3 ASRBD SYSOPS |
 
 ---
 
@@ -60,6 +59,21 @@ Les dépendances sont installées automatiquement au premier lancement.
 
 ## Utilisation
 
+### Authentification
+
+Au lancement de l'application, une authentification est requise :
+
+| Utilisateur | Mot de passe | Rôle |
+|-------------|--------------|------|
+| `admin` | `admin` | Administrateur système |
+| `technicien` | `technicien` | Technicien d'exploitation |
+
+**Sécurité :**
+- Maximum 3 tentatives de connexion
+- Fermeture automatique après échec
+
+### Lancement
+
 ```bash
 # Lancer l'application
 start_ntl.bat
@@ -89,6 +103,14 @@ Les rapports sont générés dans le dossier `rapports/` au format JSON avec hor
 
 Projet développé dans le cadre de la formation **ASRBD 2025-2026** à l'**EPSI**.
 
-**Développé avec ❤️ par l'équipe ASRBD 2025-2026**
 © 2025 - Équipe NTL-SysToolbox
 
+---
+
+<div align="center">
+
+**Développé avec ❤️ par l'équipe ASRBD 2025-2026**
+
+*Automatiser pour mieux superviser*
+
+</div>
