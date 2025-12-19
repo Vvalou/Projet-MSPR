@@ -1,3 +1,9 @@
+# ---------------------------------------------- #
+
+#Module d'audit Windows Server pour NTL-SysToolbox
+
+# ---------------------------------------------- #
+
 import winrm
 import json
 from datetime import datetime
@@ -142,6 +148,43 @@ Write-Host "CPU_USAGE=$($cpu.LoadPercentage)"
                 print(f"  CPU             : {info_cpu['name']} ({info_cpu['cores']} cœurs)")
                 print(f"  Utilisation CPU : {info_cpu['usage']}%")
         
+        # RAM
+        ps_ram = """
+$ram = Get-WmiObject Win32_OperatingSystem
+$total = [math]::Round($ram.TotalVisibleMemorySize/1MB, 2)
+$free = [math]::Round($ram.FreePhysicalMemory/1MB, 2)
+$used = [math]::Round($total - $free, 2)
+$percent = [math]::Round(($used/$total)*100, 2)
+
+Write-Host "RAM_TOTAL=$total"
+Write-Host "RAM_USED=$used"
+Write-Host "RAM_PERCENT=$percent"
+"""
+        
+        result_ram = session.run_ps(ps_ram)
+        info_ram = {}
+        
+        if result_ram.status_code == 0:
+            output = result_ram.std_out.decode('utf-8', errors='ignore')
+            
+            for line in output.split('\n'):
+                line = line.strip()
+                
+                if line.startswith('RAM_TOTAL='):
+                    total = line.split('=', 1)[1].strip()
+                    info_ram['total'] = total
+                    
+                elif line.startswith('RAM_USED='):
+                    used = line.split('=', 1)[1].strip()
+                    info_ram['used'] = used
+                    
+                elif line.startswith('RAM_PERCENT='):
+                    percent = line.split('=', 1)[1].strip()
+                    info_ram['percent'] = percent
+            
+            if 'total' in info_ram:
+                print(f"  RAM             : {info_ram['used']} GB / {info_ram['total']} GB ({info_ram['percent']}%)")
+        
         result = {
             'timestamp': timestamp,
             'host': host,
@@ -149,6 +192,7 @@ Write-Host "CPU_USAGE=$($cpu.LoadPercentage)"
             'status': 'success',
             'info_os': info_os,
             'info_cpu': info_cpu,
+            'info_ram': info_ram,
             'codes_retour': {'global': 0}
         }
         
