@@ -160,3 +160,17 @@ def verifier_etat_ubuntu(host, username, password, output_json=True):
         return error_result
 
 
+if __name__ == "__main__":
+    import getpass
+
+    titre("TEST AUDIT UBUNTU")
+
+    host = input("\nTEST de la VM Ubuntu: ").strip()
+    username = input("Utilisateur SSH: ").strip()
+    password = getpass.getpass("Mot de passe: ")
+
+    result = verifier_etat_ubuntu(host, username, password)
+
+    print("\n" + CYAN + "=" * 60)
+    print(f"Code de retour: {result['codes_retour']['global']}")
+    print("=" * 60 + RESET)
