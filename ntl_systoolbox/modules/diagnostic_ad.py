@@ -7,6 +7,7 @@ import winrm
 import json
 from datetime import datetime
 import warnings
+import random
 
 warnings.filterwarnings("ignore")
 
@@ -163,6 +164,14 @@ Write-Host "ISDC=$isDC"
             }
         }
         
+        # Sauvegarde JSON
+        if output_json:
+            id_unique = random.randint(0, 999)
+            filename = f"rapports/diagnostic_ad_dns_{datetime.now().strftime('%d-%m-%Y')}_ID{id_unique}.json"
+            with open(filename, 'w', encoding='utf-8') as f:
+                json.dump(result, f, indent=2, ensure_ascii=False)
+            print(f"\n  Rapport sauvegardé : {filename}")
+        
         return result
         
     except Exception as e:
@@ -175,5 +184,11 @@ Write-Host "ISDC=$isDC"
             'error': str(e),
             'codes_retour': {'global': 1}
         }
+        
+        if output_json:
+            id_unique = random.randint(0, 999)
+            filename = f"rapports/diagnostic_ad_dns_ERROR_{datetime.now().strftime('%d-%m-%Y')}_ID{id_unique}.json"
+            with open(filename, 'w', encoding='utf-8') as f:
+                json.dump(error_result, f, indent=2, ensure_ascii=False)
         
         return error_result
