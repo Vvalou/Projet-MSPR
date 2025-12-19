@@ -42,11 +42,27 @@ def verifier_services_ad_dns(host, username, password, output_json=True):
     timestamp = datetime.now().isoformat()
     
     try:
-        # TODO: Implémenter la logique de vérification
+        # Connexion
+        info(f"\n[INFO] Connexion à {host}...")
+        session = winrm.Session(
+            f'http://{host}:5985/wsman',
+            auth=(username, password),
+            transport='ntlm',
+            server_cert_validation='ignore'
+        )
+        
+        # Test connexion
+        test = session.run_cmd('hostname')
+        if test.status_code != 0:
+            raise Exception("Connexion impossible")
+        
+        hostname = test.std_out.decode('utf-8').strip()
+        ok(f"[OK] Connecté à {hostname}")
         
         result = {
             'timestamp': timestamp,
             'host': host,
+            'hostname': hostname,
             'status': 'success',
             'codes_retour': {'global': 0}
         }
@@ -54,6 +70,8 @@ def verifier_services_ad_dns(host, username, password, output_json=True):
         return result
         
     except Exception as e:
+        erreur(f"\n[ERREUR] {str(e)}")
+        
         error_result = {
             'timestamp': timestamp,
             'host': host,
