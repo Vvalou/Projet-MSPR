@@ -39,7 +39,7 @@ if ($Mode -eq "Full") {
     }
     else {
         Write-LogJson "error" "full_sql" @{ file = $sqlFile }
-        Write-Host "Échec sauvegarde SQL"
+        Write-Host "Echec sauvegarde SQL"
         exit 1
     }
 }
@@ -66,7 +66,7 @@ JOIN equipements e ON i.product_code = e.code;
     docker exec wms-db mysql -uwms_backup -pBackupWMS2025 wms -e "$sql" > $rawFile
 
     if ($LASTEXITCODE -ne 0) {
-        Write-Host "Erreur lors de l'exécution de la requête SQL pour l'export CSV."
+        Write-Host "Erreur lors de l'execution de la requete SQL pour l'export CSV."
         Write-LogJson "error" "table_csv" @{ table = $TableName; file = $csvFile }
         exit 1
     }
@@ -98,3 +98,4 @@ JOIN equipements e ON i.product_code = e.code;
     Write-Host "Export CSV OK (inventory avec villes + équipements) -> $csvFile"
     exit 0
 }
+
