@@ -70,18 +70,18 @@ def sous_menu_sauvegarde():
             return
 
         elif choix == "1":
-            # lance Backup-Wms.ps1 en mode Full
-            os.system('powershell -ExecutionPolicy Bypass -File ".\\src\\Backup-Wms.ps1" -Mode Full')
+            # Backup SQL complet
+            os.system('powershell -ExecutionPolicy Bypass -File ".\\ntl_systoolbox\\modules\\Backup-Wms.ps1" -Mode Full')
             pause()
 
         elif choix == "2":
-            # lance Backup-Wms.ps1 en mode Table inventory
-            os.system('powershell -ExecutionPolicy Bypass -File ".\\src\\Backup-Wms.ps1" -Mode Table -TableName inventory')
+            # Export CSV inventory
+            os.system('powershell -ExecutionPolicy Bypass -File ".\\ntl_systoolbox\\modules\\Backup-Wms.ps1" -Mode Table -TableName inventory')
             pause()
 
         elif choix == "3":
-            # lance le mini menu de test PowerShell
-            os.system('powershell -ExecutionPolicy Bypass -File ".\\src\\Test-WmsBackup.ps1"')
+            # Mini CLI de test
+            os.system('powershell -ExecutionPolicy Bypass -File ".\\ntl_systoolbox\\modules\\Test-WmsBackup.ps1"')
             pause()
 
         else:
