@@ -60,15 +60,34 @@ def sous_menu_sauvegarde():
     while True:
         clear_screen()
         print_title("Module Sauvegarde WMS")
-        print("1) Export SQL")
-        print("2) Export CSV")
+        print("1) Sauvegarde SQL complete")
+        print("2) Export CSV inventory")
+        print("3) Lancer CLI de test WMS")
         print("0) Retour au menu principal")
         choix = input("Votre choix : ").strip()
+
         if choix == "0":
             return
-        else:
-            print("\n[INFO] Option Sauvegarde sélectionnée : ", choix)
+
+        elif choix == "1":
+            # lance Backup-Wms.ps1 en mode Full
+            os.system('powershell -ExecutionPolicy Bypass -File ".\\src\\Backup-Wms.ps1" -Mode Full')
             pause()
+
+        elif choix == "2":
+            # lance Backup-Wms.ps1 en mode Table inventory
+            os.system('powershell -ExecutionPolicy Bypass -File ".\\src\\Backup-Wms.ps1" -Mode Table -TableName inventory')
+            pause()
+
+        elif choix == "3":
+            # lance le mini menu de test PowerShell
+            os.system('powershell -ExecutionPolicy Bypass -File ".\\src\\Test-WmsBackup.ps1"')
+            pause()
+
+        else:
+            print("\n[ERREUR] Choix invalide, ressayez.")
+            pause()
+
 
 def sous_menu_audit():
     while True:
