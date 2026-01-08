@@ -1,0 +1,9 @@
+{
+  "timestamp": "2026-01-08T21:13:12.088019",
+  "host": "192.149.14.14",
+  "status": "error",
+  "error": "Délai de connexion dépassé",
+  "codes_retour": {
+    "global": 2
+  }
+}
